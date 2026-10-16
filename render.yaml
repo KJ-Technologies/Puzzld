@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: puzzld
+    name: Puzzld
     runtime: node
     region: singapore
     plan: free
