@@ -11,7 +11,7 @@
     "format:check": "prettier --check \"frontend/src/**/*.{js,jsx,css}\" \"frontend/public/game/**/*.{js,css}\" \"backend/**/*.js\""
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24.0.0 <25.0.0"
   },
   "devDependencies": {
     "concurrently": "^10.0.6",
