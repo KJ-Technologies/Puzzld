@@ -1,0 +1,41 @@
+.hero {
+  --hero-radius: clamp(25px, 3vw, 36px);
+  --hero-copy-width: 590px;
+  border-radius: var(--hero-radius);
+}
+
+.hero-copy {
+  max-width: var(--hero-copy-width);
+}
+
+.hero-description {
+  max-width: 485px;
+  line-height: 1.75;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-actions .button {
+  min-height: 48px;
+}
+
+.hero-photo-frame {
+  --photo-radius: clamp(25px, 3vw, 34px);
+  margin: 0;
+  border-radius: var(--photo-radius) var(--photo-radius) 110px var(--photo-radius);
+}
+
+.hero-photo-frame > img {
+  border-radius: inherit;
+}
+
+@media (max-width: 720px) {
+  .hero-photo-frame {
+    border-radius: 25px 25px 70px 25px;
+  }
+}

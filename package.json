@@ -3,13 +3,18 @@
   "version": "1.1.0",
   "private": true,
   "description": "Puzzld — a playful, photo-led online jigsaw puzzle experience by KJ Technologies.",
-  "type": "module",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check public/js/app.js && node --check public/js/puzzles.js && node --check public/js/puzzle-engine.js"
+    "start": "npm start --prefix backend",
+    "dev": "concurrently --kill-others-on-fail --names backend,frontend \"npm start --prefix backend\" \"npm start --prefix frontend\"",
+    "build": "npm run build --prefix frontend",
+    "format": "prettier --write \"frontend/src/**/*.{js,jsx,css}\" \"frontend/public/game/**/*.{js,css}\" \"backend/**/*.js\"",
+    "format:check": "prettier --check \"frontend/src/**/*.{js,jsx,css}\" \"frontend/public/game/**/*.{js,css}\" \"backend/**/*.js\""
   },
-  "engines": { "node": ">=22" },
-  "dependencies": { "@supabase/supabase-js": "^2.57.0", "dotenv": "^16.4.7", "express": "^4.21.2", "helmet": "^8.0.0" }
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6",
+    "prettier": "3.9.10"
+  }
 }

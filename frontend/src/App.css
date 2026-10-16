@@ -1,0 +1,27 @@
+.app-shell {
+  --content-gutter: clamp(18px, 5.2vw, 75px);
+}
+
+.mini-strip,
+.closing-banner,
+.site-footer {
+  width: 100%;
+}
+
+.mini-strip {
+  --strip-gap: clamp(16px, 2vw, 32px);
+  gap: var(--strip-gap);
+  margin-left: 0;
+  margin-right: 0;
+  list-style: none;
+}
+
+.closing-banner {
+  --closing-padding: clamp(24px, 4vw, 48px);
+  padding: var(--closing-padding);
+}
+
+.site-footer {
+  --footer-gap: clamp(12px, 2vw, 28px);
+  gap: var(--footer-gap);
+}

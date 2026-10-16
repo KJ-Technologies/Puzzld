@@ -1,0 +1,35 @@
+.puzzle-stats-section {
+  --stats-card-radius: 20px;
+  --stats-card-padding: clamp(16px, 2vw, 22px);
+}
+
+.stats-section-head {
+  gap: 20px;
+}
+
+.stats-refresh {
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease;
+}
+
+.stats-refresh:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+}
+
+.community-stats-grid {
+  gap: 15px;
+}
+
+.community-stat {
+  min-height: 180px;
+  padding: var(--stats-card-padding);
+  border-radius: var(--stats-card-radius);
+}
+
+@media (max-width: 720px) {
+  .community-stat {
+    min-height: 0;
+  }
+}

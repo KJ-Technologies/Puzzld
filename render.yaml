@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: puzzld
+    runtime: node
+    region: singapore
+    plan: starter
+    buildCommand: npm ci --prefix backend && npm ci --prefix frontend && npm run build --prefix frontend
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_ORIGIN
+        value: https://puzzld.onrender.com
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false

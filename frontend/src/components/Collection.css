@@ -1,0 +1,48 @@
+.collection-section {
+  --collection-card-radius: 20px;
+  --collection-grid-gap: clamp(12px, 1.8vw, 27px);
+}
+
+.filter-row {
+  gap: 8px;
+}
+
+.filter {
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.filter:hover {
+  transform: translateY(-1px);
+  border-color: #8ba99a;
+}
+
+.design-grid {
+  gap: var(--collection-grid-gap);
+}
+
+.design-card {
+  border-radius: var(--collection-card-radius);
+}
+
+.design-photo {
+  margin: 0;
+}
+
+.design-card:focus-visible,
+.filter:focus-visible,
+.card-play:focus-visible {
+  outline: 3px solid #e6b83f;
+  outline-offset: 3px;
+}
+
+.design-meta {
+  gap: 10px;
+}
+
+.card-community-stats {
+  min-height: 27px;
+}

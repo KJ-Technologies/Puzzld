@@ -1,0 +1,27 @@
+.how-section {
+  --how-card-padding: clamp(18px, 2.5vw, 30px);
+  --how-card-radius: 20px;
+}
+
+.how-grid article {
+  padding: var(--how-card-padding);
+  border-radius: var(--how-card-radius);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.how-grid article:hover {
+  transform: translateY(-4px);
+  background: #ffffff66;
+}
+
+.how-grid h3 {
+  margin-top: 14px;
+  color: var(--color-text-primary);
+}
+
+.how-grid p {
+  color: var(--color-text-muted);
+  line-height: 1.65;
+}

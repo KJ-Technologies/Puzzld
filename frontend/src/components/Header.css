@@ -1,0 +1,58 @@
+.topbar {
+  --header-height: 86px;
+  --header-gap: clamp(12px, 2vw, 32px);
+  min-height: var(--header-height);
+  gap: var(--header-gap);
+}
+
+.brand {
+  color: var(--color-text-primary);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.brand:hover {
+  opacity: 0.82;
+  transform: translateY(-1px);
+}
+
+.topnav {
+  --nav-link-color: #3e5653;
+}
+
+.topnav ul {
+  display: flex;
+  gap: clamp(16px, 2.2vw, 32px);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.topnav a {
+  color: var(--nav-link-color);
+  transition: color 0.18s ease;
+}
+
+.topnav a:hover,
+.topnav a:focus-visible {
+  color: #d94f65;
+}
+
+.nav-cta {
+  padding: 13px 18px;
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease;
+}
+
+.nav-cta:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    --header-height: 70px;
+  }
+}

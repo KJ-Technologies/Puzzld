@@ -1,0 +1,18 @@
+/* Shared design tokens. Use semantic names so the source of each visual value is obvious. */
+:root {
+  /* Text colors */
+  --color-text-primary: #172a2a;
+  --color-text-muted: #526765;
+
+  /* Surfaces and accents */
+  --color-surface-page: #f7f7f2;
+  --color-surface-card: #ffffff;
+  --color-accent-yellow: #f7d66d;
+  --color-accent-pink: #f5c9d6;
+  --color-accent-green: #c8e5bd;
+
+  /* Borders, elevation, and shape */
+  --color-border: #d8e1da;
+  --shadow-soft: 0 22px 60px #0b27251c;
+  --radius-card: 24px;
+}

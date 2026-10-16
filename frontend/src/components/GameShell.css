@@ -1,0 +1,44 @@
+.game-view {
+  --game-panel-radius: 22px;
+  --game-panel-gap: clamp(12px, 2vw, 24px);
+}
+
+.game-heading,
+.game-toolbar,
+.game-layout {
+  gap: var(--game-panel-gap);
+}
+
+.board-panel,
+.reference-card,
+.stats-mini,
+.timer-card {
+  border-radius: var(--game-panel-radius);
+}
+
+.toolbar-button,
+.difficulty,
+.back-button,
+.icon-button,
+.footer-link {
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.toolbar-button:hover,
+.difficulty:hover:not(:disabled),
+.back-button:hover,
+.footer-link:hover {
+  transform: translateY(-1px);
+}
+
+.toolbar-button:focus-visible,
+.difficulty:focus-visible,
+.back-button:focus-visible,
+.icon-button:focus-visible,
+.footer-link:focus-visible {
+  outline: 3px solid #e6b83f;
+  outline-offset: 3px;
+}

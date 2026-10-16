@@ -1,0 +1,20 @@
+{
+  "name": "puzzld-backend",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --dns-result-order=ipv4first server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
