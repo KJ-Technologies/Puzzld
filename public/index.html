@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#173c32" />
+  <meta name="description" content="Take a little break. Pick a picture, choose your challenge, and solve it piece by piece." />
+  <title>Piece by Piece — Online Jigsaw Puzzles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Piece by Piece home">
+        <span class="brand-mark">✳</span><span>piece<span class="brand-light">by</span>piece</span>
+      </a>
+      <div class="topbar-right"><span class="tiny-status"><i></i> A little play break</span><button id="homeButton" class="text-button" type="button">All puzzles <span>↗</span></button></div>
+    </header>
+
+    <main>
+      <section id="catalogueView" class="catalogue-view">
+        <div class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow"><span class="eyebrow-line"></span> A MOMENT JUST FOR YOU</div>
+            <h1>Life feels better<br /> <em>piece by piece.</em></h1>
+            <p>Choose a little world to get lost in. Drag each piece home, slow down, and enjoy the picture coming together.</p>
+            <div class="hero-pills"><span>✦ 10 original designs</span><span>◷ Your time, your pace</span></div>
+          </div>
+          <div class="hero-art-wrap"><div class="hero-spark spark-one">✳</div><div class="hero-art" id="heroArt"><div class="hero-art-sticker">THE FIRST<br />COLLECTION</div></div><div class="hero-note">A little challenge.<br /><b>A lovely finish.</b></div></div>
+        </div>
+        <div class="section-head"><div><div class="eyebrow">THE COLLECTION</div><h2>Pick your picture</h2><p>Where would you like your mind to wander?</p></div><span class="count-pill"><b id="designCount">10</b> designs</span></div>
+        <div class="filter-row" id="filters"><button class="filter active" data-filter="All">All designs <span>10</span></button><button class="filter" data-filter="Nature">Nature</button><button class="filter" data-filter="Iconic cities">Iconic cities</button><button class="filter" data-filter="Scenic">Scenic</button><button class="filter" data-filter="Imagination">Imagination</button></div>
+        <div class="design-grid" id="designGrid" aria-live="polite"><div class="loading-card">Gathering the pictures…</div></div>
+        <footer class="site-footer"><span>Made for curious minds and quiet moments.</span><span>More pieces. More possibilities. <b>✳</b></span></footer>
+      </section>
+
+      <section id="gameView" class="game-view hidden">
+        <div class="game-heading"><button id="backButton" class="back-button" type="button">← <span>All puzzles</span></button><div class="game-title-wrap"><div class="eyebrow" id="gameCategory">THE COLLECTION</div><h1 id="gameTitle">Jungle Safari</h1><p id="gameSubtitle">Into the wild</p></div><div class="timer-card"><span class="timer-icon">◷</span><div><small>YOUR TIME</small><strong id="timer">00:00</strong></div></div></div>
+        <div class="game-toolbar"><div class="difficulty-wrap"><span class="toolbar-label">PIECES</span><div class="difficulty-options" id="difficultyOptions"><button data-pieces="50" class="difficulty active">50</button><button data-pieces="100" class="difficulty">100</button><button data-pieces="300" class="difficulty">300</button><button data-pieces="500" class="difficulty">500</button><button data-pieces="1000" class="difficulty">1,000</button></div></div><div class="toolbar-actions"><button id="referenceButton" class="toolbar-button" type="button" aria-pressed="true">▧ <span>Reference on</span></button><button id="restartButton" class="toolbar-button" type="button">↻ <span>Restart</span></button></div></div>
+        <div class="game-layout"><section class="board-panel"><div class="board-topline"><span><i class="live-dot"></i> YOUR PUZZLE</span><span id="boardHint">Drag pieces into place</span></div><div class="canvas-wrap" id="canvasWrap"><canvas id="puzzleCanvas" aria-label="Interactive jigsaw puzzle. Drag pieces to their correct position."></canvas><div id="startOverlay" class="start-overlay"><div class="start-symbol">✳</div><h2>Ready when you are.</h2><p>Your time starts with your first move.</p><button id="startButton" class="primary-button" type="button">Start puzzling <span>→</span></button></div><div id="completeOverlay" class="complete-overlay hidden"><div class="complete-confetti">✦ ✳ ✦</div><div class="complete-check">✓</div><p class="eyebrow">PICTURE PERFECT</p><h2>Every piece found its place.</h2><p id="completeMessage">You completed the puzzle in 00:00.</p><div class="complete-actions"><button id="playAgainButton" class="primary-button" type="button">Play again ↻</button><button id="chooseAnotherButton" class="secondary-button" type="button">Choose another</button></div><span class="future-note">Physical puzzles are coming soon.</span></div></div><div class="board-bottomline"><span id="progressText">0 of 50 pieces placed</span><div class="progress-track"><span id="progressBar"></span></div><span id="progressPercent">0%</span></div></section>
+          <aside class="side-panel"><div class="reference-card"><div class="side-card-head"><div><span class="eyebrow">THE BIG PICTURE</span><h3>Reference image</h3></div><button id="hideReferenceButton" class="icon-button" aria-label="Hide reference image" type="button">⌁</button></div><div class="reference-image" id="referenceImage"></div><p>Keep this picture close as you find where each piece belongs.</p></div><div class="tip-card"><div class="tip-icon">✦</div><div><b>A little tip</b><p>Look for the edges and colours first. The picture will start to reveal itself.</p></div></div><div class="stats-mini"><div><span>PIECES</span><b id="sidePieceCount">50</b></div><div><span>PLACED</span><b id="sidePlacedCount">0</b></div></div></aside>
+        </div>
+        <footer class="game-footer"><span>Take your time. There’s no wrong way to unwind.</span><button id="footerReferenceButton" class="footer-link" type="button">Toggle reference image ↗</button></footer>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
