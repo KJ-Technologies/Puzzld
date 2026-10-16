@@ -16,9 +16,37 @@ function updateFilterCounts() {
   $('filters').querySelectorAll('[data-filter]').forEach(button => { const count = counts[button.dataset.filter]; const span = button.querySelector('span'); if (span && count != null) span.textContent = count; });
   $('designCount').textContent = state.puzzles.length;
 }
+const formatCount = value => Number(value || 0).toLocaleString('en-IN');
+const formatAverage = seconds => { if (seconds == null || !Number.isFinite(Number(seconds))) return '—'; const n=Math.max(0,Math.round(Number(seconds))); return n >= 3600 ? `${Math.floor(n/3600)}h ${String(Math.floor(n%3600/60)).padStart(2,'0')}m` : `${Math.floor(n/60)}m ${String(n%60).padStart(2,'0')}s`; };
+async function loadPuzzleStats() {
+  try {
+    const response = await fetch('/api/stats', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Stats are not available yet');
+    const data = await response.json();
+    $('totalAttempts').textContent = formatCount(data.totalAttempts);
+    $('totalCompletions').textContent = formatCount(data.totalCompletions);
+    $('averageCompletion').textContent = data.averageCompletionSeconds == null ? '—' : formatAverage(data.averageCompletionSeconds);
+    $('statsNote').textContent = data.totalAttempts ? 'Based on recorded puzzle starts and completed games.' : 'Be the first to make the stats grow — play a puzzle and complete it!';
+    document.querySelectorAll('[data-puzzle-stats]').forEach(node => {
+      const stat = (data.byPuzzle || {})[node.dataset.puzzleStats];
+      if (!stat) return;
+      node.innerHTML = `<span>${formatCount(stat.attempts)} tries</span><span>${formatCount(stat.completions)} completed</span>`;
+    });
+  } catch {
+    ['totalAttempts','totalCompletions','averageCompletion'].forEach(id => { if ($(id)) $(id).textContent = '—'; });
+    if ($('statsNote')) $('statsNote').textContent = 'Community stats will appear once analytics are connected and real play events are recorded.';
+    document.querySelectorAll('[data-puzzle-stats]').forEach(node => { node.textContent = 'Stats unavailable'; });
+  }
+}
+function navigateToHash() {
+  const hash = window.location.hash || '#home';
+  if ($('gameView') && !$('gameView').classList.contains('hidden') && ['#home','#collection','#puzzle-stats','#puzzld-plus'].includes(hash)) showCatalogue();
+  const target = document.querySelector(hash);
+  if (target && ['#home','#collection','#puzzle-stats','#puzzld-plus'].includes(hash)) requestAnimationFrame(() => target.scrollIntoView({behavior:'smooth', block: hash === '#home' ? 'start' : 'start'}));
+}
 function renderCatalogue() {
   const filtered = state.filter === 'All' ? state.puzzles : state.puzzles.filter(p => p.category === state.filter);
-  $('designGrid').innerHTML = filtered.map(puzzle => `<article class="design-card" role="button" tabindex="0" data-puzzle="${escapeHtml(puzzle.id)}" aria-label="Play ${escapeHtml(puzzle.title)}"><div class="design-photo"><img loading="lazy" src="${escapeHtml(puzzle.imageUrl)}" alt="${escapeHtml(puzzle.title)} puzzle photograph"><span class="photo-chip">${escapeHtml(puzzle.tag || puzzle.category.toUpperCase())}</span><button class="card-play" type="button" aria-label="Play ${escapeHtml(puzzle.title)}">↗</button></div><div class="design-meta"><div><h3>${escapeHtml(puzzle.title)}</h3><p>${escapeHtml(puzzle.subtitle || 'A little world to explore.')}</p></div><span class="piece-tag">50 &amp; 100 pcs · Play now</span></div></article>`).join('') || '<div class="loading-card">No pictures in this collection just yet.</div>';
+  $('designGrid').innerHTML = filtered.map(puzzle => `<article class="design-card" role="button" tabindex="0" data-puzzle="${escapeHtml(puzzle.id)}" aria-label="Play ${escapeHtml(puzzle.title)}"><div class="design-photo"><img loading="lazy" src="${escapeHtml(puzzle.imageUrl)}" alt="${escapeHtml(puzzle.title)} puzzle photograph"><span class="photo-chip">${escapeHtml(puzzle.tag || puzzle.category.toUpperCase())}</span><button class="card-play" type="button" aria-label="Play ${escapeHtml(puzzle.title)}">↗</button></div><div class="design-meta"><div><h3>${escapeHtml(puzzle.title)}</h3><p>${escapeHtml(puzzle.subtitle || 'A little world to explore.')}</p></div><span class="piece-tag">50 &amp; 100 pcs · Play now</span></div><div class="card-community-stats" data-puzzle-stats="${escapeHtml(puzzle.id)}"><span>Loading stats…</span></div></article>`).join('') || '<div class="loading-card">No pictures in this collection just yet.</div>';
 }
 function showCatalogue() {
   stopTimer(); state.engine?.destroy(); state.engine = null;
@@ -49,6 +77,7 @@ async function openPuzzle(puzzleId) {
   $('timer').textContent = '00:00'; $('startOverlay').classList.add('hidden'); $('completeOverlay').classList.add('hidden'); $('loadingOverlay').classList.remove('hidden');
   $('difficultyOptions').querySelectorAll('[data-pieces]').forEach(button => { const count = Number(button.dataset.pieces); const locked = count > 100; button.disabled = locked; button.classList.toggle('locked', locked); button.classList.toggle('active', count === state.pieceCount); button.setAttribute('aria-label', locked ? `${count} pieces, coming soon` : `${count} pieces`); });
   updateReference(); updateProgress(0, state.pieceCount); window.scrollTo({ top: 0, behavior: 'smooth' });
+  track('puzzle_opened');
   try {
     const image = await preloadImage(puzzle.imageUrl);
     $('heroPhoto').src = puzzle.imageUrl;
@@ -68,7 +97,7 @@ async function openPuzzle(puzzleId) {
 function completePuzzle() {
   stopTimer(); state.completed = true; $('timer').textContent = formatTime(state.elapsed);
   $('completeMessage').textContent = `You finished ${state.puzzle.title} in ${formatTime(state.elapsed)} with ${state.pieceCount.toLocaleString()} pieces. Look at you go!`;
-  $('completeOverlay').classList.remove('hidden'); track('puzzle_completed', { elapsedSeconds: state.elapsed, placedPieces: state.pieceCount });
+  $('completeOverlay').classList.remove('hidden'); track('puzzle_completed', { elapsedSeconds: state.elapsed, placedPieces: state.pieceCount }).finally(loadPuzzleStats);
 }
 function restartPuzzle() {
   stopTimer(); state.elapsed = 0; state.started = false; state.startedAt = null; state.completed = false; $('timer').textContent = '00:00'; $('completeOverlay').classList.add('hidden'); $('startOverlay').classList.remove('hidden'); state.engine?.restart(); updateProgress(0, state.pieceCount); track('puzzle_restarted');
@@ -93,11 +122,14 @@ function wireEvents() {
   $('restartButton').addEventListener('click', restartPuzzle); $('playAgainButton').addEventListener('click', restartPuzzle); $('chooseAnotherButton').addEventListener('click', showCatalogue);
   $('referenceButton').addEventListener('click', toggleReference); $('hideReferenceButton').addEventListener('click', toggleReference); $('footerReferenceButton').addEventListener('click', toggleReference);
   $('difficultyOptions').addEventListener('click', event => { const button = event.target.closest('[data-pieces]'); if (button) changeDifficulty(Number(button.dataset.pieces)); });
+  $('refreshStatsButton')?.addEventListener('click', loadPuzzleStats);
+  window.addEventListener('hashchange', navigateToHash);
 }
 async function init() {
   wireEvents(); $('heroPhoto').addEventListener('error', () => { $('heroPhoto').src = PHOTO_PUZZLES[6].imageUrl; }, { once: true });
-  state.puzzles = PHOTO_PUZZLES; renderCatalogue(); updateFilterCounts();
+  state.puzzles = PHOTO_PUZZLES; renderCatalogue(); updateFilterCounts(); loadPuzzleStats();
   try { const response = await fetch('/api/puzzles'); if (response.ok) { const data = await response.json(); if (Array.isArray(data.puzzles) && data.puzzles.length) state.puzzles = mergePuzzleRecords(data.puzzles); } } catch (error) { console.warn('Using local Puzzld catalogue:', error.message); }
-  renderCatalogue(); updateFilterCounts();
+  renderCatalogue(); updateFilterCounts(); loadPuzzleStats();
+  if (window.location.hash) navigateToHash();
 }
 init();

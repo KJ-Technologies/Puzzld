@@ -30,7 +30,7 @@ app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false 
 app.use(express.json({ limit: '20kb' }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0 }));
 
-app.get('/api/health', (_req, res) => res.json({ ok: true, app: 'puzzle-play-v1', database: supabase ? 'configured' : 'not-configured' }));
+app.get('/api/health', (_req, res) => res.json({ ok: true, app: 'puzzld', database: supabase ? 'configured' : 'not-configured' }));
 app.get('/api/puzzles', async (_req, res) => {
   if (supabase) {
     const { data, error } = await supabase.from('puzzles').select('id,title,category,subtitle,emoji,palette,featured,sort_order').eq('is_active', true).order('sort_order');
@@ -39,9 +39,38 @@ app.get('/api/puzzles', async (_req, res) => {
   }
   res.json({ puzzles: catalogue, source: 'local-fallback' });
 });
+app.get('/api/stats', async (_req, res) => {
+  if (!supabase) return res.json({ totalAttempts: 0, totalCompletions: 0, averageCompletionSeconds: null, byPuzzle: Object.fromEntries(catalogue.map(item => [item.id, { attempts: 0, completions: 0, averageCompletionSeconds: null }])), source: 'not-configured' });
+  try {
+    const [openedResult, startedResult, completedResult] = await Promise.all([
+      supabase.from('puzzle_events').select('puzzle_id', { count: 'exact', head: true }).eq('event_type', 'puzzle_opened'),
+      supabase.from('puzzle_events').select('puzzle_id', { count: 'exact', head: true }).eq('event_type', 'puzzle_started'),
+      supabase.from('puzzle_events').select('puzzle_id,elapsed_seconds').eq('event_type', 'puzzle_completed').not('elapsed_seconds', 'is', null).limit(10000)
+    ]);
+    if (openedResult.error || startedResult.error || completedResult.error) throw openedResult.error || startedResult.error || completedResult.error;
+    const byPuzzle = {};
+    for (const item of catalogue) byPuzzle[item.id] = { attempts: 0, completions: 0, averageCompletionSeconds: null };
+    const { data: openedRows, error: openedRowsError } = await supabase.from('puzzle_events').select('puzzle_id').eq('event_type', 'puzzle_opened').limit(10000);
+    if (openedRowsError) throw openedRowsError;
+    for (const row of openedRows || []) if (byPuzzle[row.puzzle_id]) byPuzzle[row.puzzle_id].attempts += 1;
+    for (const row of completedResult.data || []) if (byPuzzle[row.puzzle_id]) { byPuzzle[row.puzzle_id].completions += 1; }
+    for (const item of catalogue) {
+      const values = (completedResult.data || []).filter(row => row.puzzle_id === item.id && Number.isFinite(Number(row.elapsed_seconds))).map(row => Number(row.elapsed_seconds));
+      byPuzzle[item.id].averageCompletionSeconds = values.length ? Math.round(values.reduce((a,b)=>a+b,0)/values.length) : null;
+    }
+    const times = (completedResult.data || []).map(row => Number(row.elapsed_seconds)).filter(Number.isFinite);
+    const totalAttempts = Number(openedResult.count || 0) || Number(startedResult.count || 0);
+    res.set('Cache-Control', 'no-store');
+    res.json({ totalAttempts, totalCompletions: completedResult.data?.length || 0, averageCompletionSeconds: times.length ? Math.round(times.reduce((a,b)=>a+b,0)/times.length) : null, byPuzzle, source: 'supabase' });
+  } catch (error) {
+    console.warn('Could not load puzzle stats:', error.message);
+    res.status(503).json({ error: 'Stats temporarily unavailable' });
+  }
+});
+
 app.post('/api/events', async (req, res) => {
   const { eventType, puzzleId, pieceCount, elapsedSeconds, placedPieces } = req.body || {};
-  const allowed = new Set(['puzzle_started', 'puzzle_completed', 'puzzle_restarted', 'reference_toggled', 'difficulty_changed']);
+  const allowed = new Set(['puzzle_opened', 'puzzle_started', 'puzzle_completed', 'puzzle_restarted', 'reference_toggled', 'difficulty_changed']);
   if (!allowed.has(eventType) || typeof puzzleId !== 'string' || !catalogue.some(p => p.id === puzzleId)) {
     return res.status(400).json({ error: 'Invalid event payload' });
   }
