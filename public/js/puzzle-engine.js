@@ -94,7 +94,12 @@ export class PuzzleEngine {
     this.path(ctx, piece); ctx.shadowColor = 'rgba(36,31,23,.22)'; ctx.shadowBlur = piece.placed ? 0 : 4; ctx.shadowOffsetX = piece.placed ? 0 : 1; ctx.shadowOffsetY = piece.placed ? 0 : 2;
     ctx.fillStyle = 'rgba(255,255,255,.001)'; ctx.fill(); ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
     this.path(ctx, piece); ctx.lineWidth = Math.max(.8, Math.min(1.8, Math.min(piece.w, piece.h) * .035)); ctx.strokeStyle = piece.placed ? 'rgba(255,255,255,.78)' : 'rgba(255,255,255,.96)'; ctx.stroke();
-    this.path(ctx, piece); ctx.lineWidth = .65; ctx.strokeStyle = 'rgba(35,35,28,.30)'; ctx.stroke();
+    this.path(ctx, piece); ctx.lineWidth = .65; ctx.strokeStyle = piece.placed ? 'rgba(47,137,75,.95)' : 'rgba(35,35,28,.34)'; ctx.stroke();
+    if (piece.placed) {
+      // Subtle green confirmation ring and tick make solved pieces recognisable without obscuring the photo.
+      ctx.save(); ctx.globalAlpha = .92; ctx.fillStyle = '#2f874b'; ctx.beginPath(); ctx.arc(piece.w - Math.min(11, piece.w * .16), Math.min(11, piece.h * .16), Math.min(5, Math.min(piece.w, piece.h) * .12), 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.35; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(piece.w - Math.min(13, piece.w * .19), Math.min(11, piece.h * .16)); ctx.lineTo(piece.w - Math.min(11, piece.w * .16), Math.min(13, piece.h * .19)); ctx.lineTo(piece.w - Math.min(8, piece.w * .12), Math.min(8, piece.h * .12)); ctx.stroke(); ctx.restore();
+    }
     ctx.restore();
   }
   draw() {
@@ -107,8 +112,10 @@ export class PuzzleEngine {
     ctx.save(); ctx.shadowColor = 'rgba(46,39,25,.14)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 4; ctx.fillStyle = '#fbf8ef'; ctx.fillRect(this.board.x, this.board.y, this.board.w, this.board.h); ctx.restore();
     ctx.save(); ctx.beginPath(); ctx.rect(this.board.x, this.board.y, this.board.w, this.board.h); ctx.clip(); ctx.globalAlpha = .18; ctx.drawImage(this.image, this.board.x, this.board.y, this.board.w, this.board.h); ctx.restore();
     ctx.strokeStyle = 'rgba(75,65,49,.18)'; ctx.lineWidth = 1; ctx.strokeRect(this.board.x, this.board.y, this.board.w, this.board.h);
-    for (const p of this.pieces) if (!p.placed && p !== this.dragging) this.drawPiece(p);
+    // Correctly placed pieces are the table's base layer. Loose pieces sit above them.
     for (const p of this.pieces) if (p.placed) this.drawPiece(p);
+    for (const p of this.pieces) if (!p.placed && p !== this.dragging) this.drawPiece(p);
+    // The active piece is always drawn last so it never disappears underneath another piece.
     if (this.dragging) this.drawPiece(this.dragging);
   }
   coords(event) { const rect = this.canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * this.cssWidth / rect.width, y: (event.clientY - rect.top) * this.cssHeight / rect.height }; }

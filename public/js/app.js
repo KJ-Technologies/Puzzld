@@ -18,7 +18,7 @@ function updateFilterCounts() {
 }
 function renderCatalogue() {
   const filtered = state.filter === 'All' ? state.puzzles : state.puzzles.filter(p => p.category === state.filter);
-  $('designGrid').innerHTML = filtered.map(puzzle => `<article class="design-card" role="button" tabindex="0" data-puzzle="${escapeHtml(puzzle.id)}" aria-label="Play ${escapeHtml(puzzle.title)}"><div class="design-photo"><img loading="lazy" src="${escapeHtml(puzzle.imageUrl)}" alt="${escapeHtml(puzzle.title)} puzzle photograph"><span class="photo-chip">${escapeHtml(puzzle.tag || puzzle.category.toUpperCase())}</span><button class="card-play" type="button" aria-label="Play ${escapeHtml(puzzle.title)}">↗</button></div><div class="design-meta"><div><h3>${escapeHtml(puzzle.title)}</h3><p>${escapeHtml(puzzle.subtitle || 'A little world to explore.')}</p></div><span class="piece-tag">50–1,000 pcs</span></div></article>`).join('') || '<div class="loading-card">No pictures in this collection just yet.</div>';
+  $('designGrid').innerHTML = filtered.map(puzzle => `<article class="design-card" role="button" tabindex="0" data-puzzle="${escapeHtml(puzzle.id)}" aria-label="Play ${escapeHtml(puzzle.title)}"><div class="design-photo"><img loading="lazy" src="${escapeHtml(puzzle.imageUrl)}" alt="${escapeHtml(puzzle.title)} puzzle photograph"><span class="photo-chip">${escapeHtml(puzzle.tag || puzzle.category.toUpperCase())}</span><button class="card-play" type="button" aria-label="Play ${escapeHtml(puzzle.title)}">↗</button></div><div class="design-meta"><div><h3>${escapeHtml(puzzle.title)}</h3><p>${escapeHtml(puzzle.subtitle || 'A little world to explore.')}</p></div><span class="piece-tag">50 &amp; 100 pcs · Play now</span></div></article>`).join('') || '<div class="loading-card">No pictures in this collection just yet.</div>';
 }
 function showCatalogue() {
   stopTimer(); state.engine?.destroy(); state.engine = null;
@@ -47,7 +47,7 @@ async function openPuzzle(puzzleId) {
   stopTimer(); state.engine?.destroy(); state.engine = null; state.puzzle = puzzle; state.elapsed = 0; state.startedAt = null; state.started = false; state.completed = false; state.pieceCount = 50;
   $('catalogueView').classList.add('hidden'); $('gameView').classList.remove('hidden'); $('gameTitle').textContent = puzzle.title; $('gameCategory').textContent = (puzzle.category || 'YOUR LITTLE ESCAPE').toUpperCase(); $('gameSubtitle').textContent = puzzle.subtitle || 'A little world to explore.';
   $('timer').textContent = '00:00'; $('startOverlay').classList.add('hidden'); $('completeOverlay').classList.add('hidden'); $('loadingOverlay').classList.remove('hidden');
-  $('difficultyOptions').querySelectorAll('[data-pieces]').forEach(button => button.classList.toggle('active', Number(button.dataset.pieces) === state.pieceCount));
+  $('difficultyOptions').querySelectorAll('[data-pieces]').forEach(button => { const count = Number(button.dataset.pieces); const locked = count > 100; button.disabled = locked; button.classList.toggle('locked', locked); button.classList.toggle('active', count === state.pieceCount); button.setAttribute('aria-label', locked ? `${count} pieces, coming soon` : `${count} pieces`); });
   updateReference(); updateProgress(0, state.pieceCount); window.scrollTo({ top: 0, behavior: 'smooth' });
   try {
     const image = await preloadImage(puzzle.imageUrl);
@@ -75,6 +75,7 @@ function restartPuzzle() {
 }
 function changeDifficulty(count) {
   if (!PIECE_COUNTS.includes(count) || count === state.pieceCount || !state.puzzle) return;
+  if (count > 100) { showToast(`${count.toLocaleString()} pieces are coming soon. For now, enjoy 50 or 100!`); return; }
   state.pieceCount = count; stopTimer(); state.elapsed = 0; state.started = false; state.startedAt = null; state.completed = false; $('timer').textContent = '00:00'; $('completeOverlay').classList.add('hidden'); $('startOverlay').classList.remove('hidden'); $('loadingOverlay').classList.remove('hidden');
   $('difficultyOptions').querySelectorAll('[data-pieces]').forEach(button => button.classList.toggle('active', Number(button.dataset.pieces) === count));
   const canvas = $('puzzleCanvas'); state.engine?.destroy(); state.engine = null;
