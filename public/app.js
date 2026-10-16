@@ -60,7 +60,20 @@ function makePiecePath(ctx,w,h,edges,pad){const W=w,H=h;ctx.beginPath();ctx.move
 function drawEdge(ctx,x1,y1,x2,y2,tab,pad){const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);if(!tab||len<20){ctx.lineTo(x2,y2);return;}const ux=dx/len,uy=dy/len,nx=-uy,ny=ux;const depth=Math.min(11,len*.17);const start=.32*len,end=.68*len,neck=.12*len,head=.16*len;const pt=(along,normal)=>[x1+ux*along+nx*normal,y1+uy*along+ny*normal];let p=pt(start,0);ctx.lineTo(...p);ctx.lineTo(...pt(start+neck,0));ctx.bezierCurveTo(...pt(start+neck,tab*depth*.22),...pt(start+neck*.4,tab*depth),...pt(start+len*.5,tab*depth));ctx.bezierCurveTo(...pt(end-neck*.4,tab*depth),...pt(end-neck,tab*depth*.22),...pt(end-neck,0));ctx.lineTo(...pt(end,0));ctx.lineTo(x2,y2);}
 function makeSvgImage(puzzle){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=artData(puzzle,'board');});}
 class PuzzleEngine{
-  constructor(canvas,puzzle,total){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.puzzle=puzzle;this.total=total;this.placed=0;this.pieces=[];this.dragging=null;this.image=null;this.pad=12;this.aspect=4/3;this.board={x:20,y:20,w:0,h:0};this.dpr=Math.min(window.devicePixelRatio||1,1.5);this.layout();this.pointerDown=this.onPointerDown.bind(this);this.pointerMove=this.onPointerMove.bind(this);this.pointerUp=this.onPointerUp.bind(this);canvas.addEventListener('pointerdown',this.pointerDown);canvas.addEventListener('pointermove',this.pointerMove);canvas.addEventListener('pointerup',this.pointerUp);canvas.addEventListener('pointercancel',this.pointerUp);}
+  constructor(canvas,puzzle,total){this.canvas=canvas;
+  this.ctx=canvas.getContext('2d',{alpha:false});
+  this.puzzle=puzzle;
+  this.total=total;
+  this.placed=0;
+  this.pieces=[];
+  this.dragging=null;
+  this.image=null;
+  this.pad=12;
+  this.aspect=4/3;
+  this.board={x:20,y:20,w:0,h:0};
+  this.dpr=Math.min(window.devicePixelRatio||1,1.5);
+  this.grid=chooseGrid(this.total,this.aspect);
+  this.layout();this.pointerDown=this.onPointerDown.bind(this);this.pointerMove=this.onPointerMove.bind(this);this.pointerUp=this.onPointerUp.bind(this);canvas.addEventListener('pointerdown',this.pointerDown);canvas.addEventListener('pointermove',this.pointerMove);canvas.addEventListener('pointerup',this.pointerUp);canvas.addEventListener('pointercancel',this.pointerUp);}
   async init(){this.image=await makeSvgImage(this.puzzle);this.createPieces();this.draw();}
   layout(){const parent=this.canvas.parentElement;const w=Math.max(320,parent.clientWidth||800);const small=window.innerWidth<760;const h=Math.max(small?360:410,Math.min(690,w*(small?.84:.72)));this.cssWidth=w;this.cssHeight=h;this.canvas.style.width='100%';this.canvas.style.height='auto';this.canvas.width=Math.round(w*this.dpr);this.canvas.height=Math.round(h*this.dpr);this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);this.board={x:Math.max(18,w*.045),y:Math.max(22,h*.05),w:w-Math.max(36,w*.09),h:h-Math.max(45,h*.1)};this.cellW=this.board.w/this.grid.cols;this.cellH=this.board.h/this.grid.rows;}
   createPieces(){this.grid=chooseGrid(this.total,this.aspect);this.layout();this.pieces=[];this.placed=0;const {cols,rows}=this.grid;const hs=Array.from({length:rows+1},()=>Array(cols).fill(0));const vs=Array.from({length:rows},()=>Array(cols+1).fill(0));for(let r=1;r<rows;r++)for(let c=0;c<cols;c++)hs[r][c]=rand(r*cols+c+this.total)*2-1;for(let r=0;r<rows;r++)for(let c=1;c<cols;c++)vs[r][c]=rand(5000+r*cols+c+this.total)*2-1;for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const w=this.cellW,h=this.cellH;const piece={id:r*cols+c,r,c,w,h,tx:this.board.x+c*w,ty:this.board.y+r*h,x:0,y:0,placed:false,edges:{top:r===0?0:hs[r][c],right:c===cols-1?0:vs[r][c+1],bottom:r===rows-1?0:hs[r+1][c],left:c===0?0:vs[r][c]},z:0};const trayW=this.cssWidth-this.board.x*2,trayH=this.cssHeight-this.board.y*2;piece.x=this.board.x+rand(piece.id*2+this.total)*Math.max(0,trayW-w);piece.y=this.board.y+rand(piece.id*3+this.total+99)*Math.max(0,trayH-h);if(Math.abs(piece.x-piece.tx)<w*.4&&Math.abs(piece.y-piece.ty)<h*.4){piece.x=Math.max(this.board.x,Math.min(this.board.x+trayW-w,piece.x+this.cellW*1.4));}this.pieces.push(piece);} // Start from a fully scrambled board.

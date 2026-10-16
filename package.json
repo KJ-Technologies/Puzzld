@@ -1,10 +1,15 @@
 {
-  "name": "puzzle-play-v1",
-  "version": "1.0.0",
-  "description": "A lightweight online jigsaw puzzle experience with Express and Supabase-ready analytics.",
+  "name": "puzzld",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Puzzld — a playful, photo-led online jigsaw puzzle experience by KJ Technologies.",
   "type": "module",
   "main": "server.js",
-  "scripts": { "start": "node server.js", "dev": "node --watch server.js", "check": "node --check server.js && node --check public/app.js" },
-  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node --check server.js && node --check public/js/app.js && node --check public/js/puzzles.js && node --check public/js/puzzle-engine.js"
+  },
+  "engines": { "node": ">=22" },
   "dependencies": { "@supabase/supabase-js": "^2.57.0", "dotenv": "^16.4.7", "express": "^4.21.2", "helmet": "^8.0.0" }
 }
